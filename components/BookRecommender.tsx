@@ -3,10 +3,14 @@
 import { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import BookCard from './BookCard'
+import BookShelf from './BookShelf'
 import type { Book } from '@/lib/aladin'
+import { emotionDetails } from '@/lib/emotionKeywords'
+import type { ReadingContext } from './FollowUpQuestions'
 
 interface BookRecommenderProps {
   emotion: string
+  context: ReadingContext
 }
 
 const Container = styled.div`
@@ -14,76 +18,102 @@ const Container = styled.div`
 `
 
 const Header = styled.div`
-  background: white;
-  border-radius: 12px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(74, 85, 112, 0.1);
+  border-radius: 14px;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  margin-bottom: 1.25rem;
+  box-shadow: 0 24px 60px rgba(44, 55, 90, 0.08);
+  backdrop-filter: blur(18px);
 
   h2 {
-    font-size: 2rem;
-    color: #2c3e50;
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 3vw, 2.5rem);
+    color: #172033;
     margin-bottom: 0.5rem;
+    line-height: 1.25;
   }
 
   p {
-    color: #7f8c8d;
+    color: #647086;
     font-size: 1.1rem;
+    line-height: 1.7;
+  }
+
+  .tag {
+    display: inline-flex;
+    margin-bottom: 0.9rem;
+    padding: 0.4rem 0.65rem;
+    border-radius: 999px;
+    background: #e9efff;
+    color: #4e73ff;
+    font-size: 0.85rem;
+    font-weight: 900;
   }
 `
 
 const BooksGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
   margin-bottom: 2rem;
+  margin-top: 1.25rem;
 `
 
 const LoadingContainer = styled.div`
   display: flex;
+  flex-direction: column;
+  gap: 1rem;
   justify-content: center;
   align-items: center;
-  height: 400px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-height: 320px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(74, 85, 112, 0.1);
+  border-radius: 14px;
+  box-shadow: 0 24px 60px rgba(44, 55, 90, 0.08);
+  color: #647086;
+  text-align: center;
 
-  .spinner {
-    font-size: 3rem;
-    animation: spin 1s linear infinite;
+  img {
+    width: 8rem;
+    aspect-ratio: 1;
+    object-fit: contain;
+    animation: breathe 1.8s ease-in-out infinite;
   }
 
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  @keyframes breathe {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
   }
 `
 
 const ErrorContainer = styled.div`
-  background: #fee;
-  border: 1px solid #fcc;
-  border-radius: 8px;
+  background: #ffecef;
+  border: 1px solid rgba(255, 102, 128, 0.26);
+  border-radius: 10px;
   padding: 2rem;
   text-align: center;
-  color: #c33;
+  color: #d64560;
   font-weight: bold;
 `
 
 const ReadingListSection = styled.div`
-  background: white;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border: 1px solid rgba(65, 88, 208, 0.1);
+  border-radius: 14px;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  box-shadow: 0 18px 50px rgba(39, 61, 119, 0.08);
 
   h3 {
+    font-family: var(--font-display);
     font-size: 1.5rem;
-    color: #2c3e50;
+    color: #172033;
     margin-bottom: 1rem;
   }
 
   .empty {
     text-align: center;
-    color: #7f8c8d;
+    color: #79849a;
     padding: 2rem;
   }
 
@@ -98,36 +128,37 @@ const ReadingListSection = styled.div`
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 8px;
+    background: #f7faff;
+    border: 1px solid rgba(65, 88, 208, 0.1);
+    border-radius: 10px;
     
     .title {
       font-weight: bold;
-      color: #2c3e50;
+      color: #172033;
     }
 
     .date {
       font-size: 0.85rem;
-      color: #7f8c8d;
+      color: #79849a;
     }
 
     button {
-      background: #e74c3c;
+      background: #ff6680;
       color: white;
       border: none;
       padding: 0.5rem 1rem;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
       transition: background 0.3s;
 
       &:hover {
-        background: #c0392b;
+        background: #e84f6a;
       }
     }
   }
 `
 
-export default function BookRecommender({ emotion }: BookRecommenderProps) {
+export default function BookRecommender({ emotion, context }: BookRecommenderProps) {
   const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -136,7 +167,7 @@ export default function BookRecommender({ emotion }: BookRecommenderProps) {
 
   useEffect(() => {
     fetchBooks()
-  }, [emotion])
+  }, [emotion, context])
 
   const fetchBooks = async () => {
     try {
@@ -144,7 +175,12 @@ export default function BookRecommender({ emotion }: BookRecommenderProps) {
       setError(null)
 
       // 서버 Route Handler가 알라딘을 호출(실패 시 더미로 폴백)한다.
-      const res = await fetch(`/api/books?emotion=${encodeURIComponent(emotion)}&count=5`)
+      const params = new URLSearchParams({
+        emotion,
+        context: [context.pace, context.genre, context.purpose].join(' '),
+        count: '8',
+      })
+      const res = await fetch(`/api/books?${params.toString()}`)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data: { source: string; books: Book[] } = await res.json()
 
@@ -186,18 +222,29 @@ export default function BookRecommender({ emotion }: BookRecommenderProps) {
   return (
     <Container>
       <Header>
-        <h2>"{emotion}"에 어울리는 책들</h2>
-        <p>이 책들이 당신의 마음을 위로하고 영감을 줄 거예요</p>
+        <span className="tag">{emotionDetails[emotion]?.shelf ?? '오늘의 책장'}</span>
+        <h2>{emotion}</h2>
+        <p>
+          {context.pace} · {context.genre} · {context.purpose} 쪽으로 좁혀봤어요.
+          표지를 천천히 훑다가 마음이 먼저 가는 한 권을 열어보세요.
+        </p>
       </Header>
 
       {loading ? (
         <LoadingContainer>
-          <div className="spinner">📚</div>
+          <img src="/mascot-curator.png" alt="" />
+          <p>모모가 답변을 엮어서 알라딘 커버들을 살펴보는 중이에요.</p>
         </LoadingContainer>
       ) : error ? (
         <ErrorContainer>{error}</ErrorContainer>
       ) : (
         <>
+          <BookShelf
+            title="모모가 골라온 추천 커버"
+            subtitle="표지를 옆으로 넘겨 먼저 훑어보세요."
+            books={books}
+            compact
+          />
           <BooksGrid>
             {books.map((book) => {
               const id = book.isbn ?? book.title
@@ -211,7 +258,7 @@ export default function BookRecommender({ emotion }: BookRecommenderProps) {
                   url={book.url}
                   image={book.image}
                   description={book.description}
-                  reasonToRead={`이 책은 "${emotion}"이라는 감정을 다루고 있으며, 당신의 마음을 따뜻하게 안아줄 거예요.`}
+                  reasonToRead={emotionDetails[emotion]?.reason ?? `지금의 "${emotion}"에 천천히 닿을 만한 문장을 품은 책이에요.`}
                   isExpanded={expandedBooks.has(id)}
                   onExpandClick={() => toggleExpandBook(id)}
                 />
@@ -220,10 +267,10 @@ export default function BookRecommender({ emotion }: BookRecommenderProps) {
           </BooksGrid>
 
           <ReadingListSection>
-            <h3>📖 내 독서 목록</h3>
+            <h3>내가 다시 펼쳐볼 책</h3>
             {readingList.length === 0 ? (
               <div className="empty">
-                <p>추가된 책이 없습니다.</p>
+                <p>아직 담아둔 책은 없어요.</p>
               </div>
             ) : (
               <div className="reading-list">

@@ -74,6 +74,11 @@ interface SearchOptions {
   signal?: AbortSignal
 }
 
+interface ListOptions {
+  maxResults?: number
+  signal?: AbortSignal
+}
+
 // 알라딘 검색 API를 호출해 Book[]을 반환한다.
 // 키가 없거나 HTTP 오류면 throw → 호출 측(Route Handler)이 더미로 폴백한다.
 export async function searchAladin(
@@ -104,4 +109,29 @@ export async function searchAladin(
   const data = JSON.parse(text)
   const items: AladinItem[] = Array.isArray(data.item) ? data.item : []
   return items.map((item) => transformAladinItem(item))
+}
+
+// 알라딘 베스트셀러 목록을 가져온다. 홈의 책장 선반에서 사용한다.
+export async function getAladinBestSellers(opts: ListOptions = {}): Promise<Book[]> {
+  const ttbkey = process.env.ALADIN_TTB_KEY
+  if (!ttbkey) throw new Error('ALADIN_TTB_KEY 환경변수가 설정되지 않았습니다')
+
+  const params = new URLSearchParams({
+    ttbkey,
+    QueryType: 'Bestseller',
+    SearchTarget: 'Book',
+    MaxResults: String(opts.maxResults ?? 12),
+    Cover: 'Big',
+    Output: 'JS',
+    Version: '20131101',
+  })
+
+  const url = `https://www.aladin.co.kr/ttb/api/ItemList.aspx?${params.toString()}`
+  const res = await fetch(url, { signal: opts.signal, cache: 'no-store' })
+  if (!res.ok) throw new Error(`알라딘 베스트셀러 API HTTP ${res.status}`)
+
+  const text = await res.text()
+  const data = JSON.parse(text)
+  const items: AladinItem[] = Array.isArray(data.item) ? data.item : []
+  return items.map((item) => transformAladinItem(item, '베스트셀러'))
 }

@@ -1,5 +1,5 @@
 {
-  "name": "1234-book-service",
+  "name": "book-service",
   "version": "0.1.0",
   "private": true,
   "scripts": {
