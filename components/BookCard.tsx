@@ -38,6 +38,14 @@ const BookImage = styled.div`
   justify-content: center;
   color: white;
   font-size: 4rem;
+  overflow: hidden;
+`
+
+const CoverImg = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: white;
 `
 
 const BookInfo = styled.div`
@@ -165,6 +173,7 @@ export default function BookCard({
   rating,
   price,
   url,
+  image,
   description,
   reasonToRead,
   isExpanded = false,
@@ -174,7 +183,9 @@ export default function BookCard({
 
   return (
     <Card>
-      <BookImage>📖</BookImage>
+      <BookImage>
+        {image ? <CoverImg src={image} alt={title} loading="lazy" /> : '📖'}
+      </BookImage>
       <BookInfo>
         <Title>{title}</Title>
         <Author>{author}</Author>

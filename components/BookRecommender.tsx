@@ -3,20 +3,10 @@
 import { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import BookCard from './BookCard'
-import { getRecommendedBooks } from '@/lib/matching'
+import type { Book } from '@/lib/aladin'
 
 interface BookRecommenderProps {
   emotion: string
-}
-
-interface Book {
-  title: string
-  author: string
-  rating: number
-  price: number
-  url: string
-  description: string
-  theme: string
 }
 
 const Container = styled.div`
@@ -152,14 +142,16 @@ export default function BookRecommender({ emotion }: BookRecommenderProps) {
     try {
       setLoading(true)
       setError(null)
-      
-      // 로컬 매칭 함수 사용
-      const recommendedBooks = getRecommendedBooks(emotion, 5)
-      
-      if (recommendedBooks.length === 0) {
+
+      // 서버 Route Handler가 알라딘을 호출(실패 시 더미로 폴백)한다.
+      const res = await fetch(`/api/books?emotion=${encodeURIComponent(emotion)}&count=5`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data: { source: string; books: Book[] } = await res.json()
+
+      if (!data.books || data.books.length === 0) {
         setError('해당 감정에 맞는 책을 찾을 수 없습니다.')
       } else {
-        setBooks(recommendedBooks)
+        setBooks(data.books)
       }
     } catch (err) {
       setError('책을 가져오는 중 오류가 발생했습니다.')
@@ -207,20 +199,24 @@ export default function BookRecommender({ emotion }: BookRecommenderProps) {
       ) : (
         <>
           <BooksGrid>
-            {books.map((book) => (
-              <BookCard
-                key={book.title}
-                title={book.title}
-                author={book.author}
-                rating={book.rating}
-                price={book.price}
-                url={book.url}
-                description={book.description}
-                reasonToRead={`이 책은 "${emotion}"이라는 감정을 다루고 있으며, 당신의 마음을 따뜻하게 안아줄 거예요.`}
-                isExpanded={expandedBooks.has(book.title)}
-                onExpandClick={() => toggleExpandBook(book.title)}
-              />
-            ))}
+            {books.map((book) => {
+              const id = book.isbn ?? book.title
+              return (
+                <BookCard
+                  key={id}
+                  title={book.title}
+                  author={book.author}
+                  rating={book.rating}
+                  price={book.price}
+                  url={book.url}
+                  image={book.image}
+                  description={book.description}
+                  reasonToRead={`이 책은 "${emotion}"이라는 감정을 다루고 있으며, 당신의 마음을 따뜻하게 안아줄 거예요.`}
+                  isExpanded={expandedBooks.has(id)}
+                  onExpandClick={() => toggleExpandBook(id)}
+                />
+              )
+            })}
           </BooksGrid>
 
           <ReadingListSection>
