@@ -5,46 +5,46 @@ import styled from "styled-components";
 import EmotionSelector from "@/components/EmotionSelector";
 import BookRecommender from "@/components/BookRecommender";
 import FollowUpQuestions, {
-  type ReadingContext,
+  type ReadingContext
 } from "@/components/FollowUpQuestions";
 import BookShelf from "@/components/BookShelf";
 import type { Book } from "@/lib/aladin";
+import { getMomoTheme } from "@/lib/momoThemes";
 
 const PageContainer = styled.div`
   min-height: 100vh;
-  background: #f6f6f3;
-  color: #172033;
+  background: transparent;
+  color: var(--ink);
 `;
 
 const ContentWrapper = styled.div`
-  width: min(100%, 980px);
+  width: min(100%, 1040px);
   margin: 0 auto;
-  padding: 22px clamp(16px, 3vw, 28px) 56px;
+  padding: 24px clamp(18px, 4vw, 36px) 52px;
 `;
 
 const Header = styled.header`
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(230px, 360px);
-  gap: clamp(1rem, 4vw, 2.5rem);
-  align-items: center;
-  padding: 18px 0 24px;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding: 4px 0 22px;
 
   h1 {
-    max-width: 540px;
+    max-width: 620px;
     font-family: var(--font-display);
-    font-size: clamp(1.95rem, 3.5vw, 2.85rem);
+    font-size: clamp(1.82rem, 3.8vw, 3.2rem);
     font-weight: 700;
     line-height: 1.18;
-    margin-bottom: 0.9rem;
+    margin-bottom: 0.7rem;
     letter-spacing: 0;
-    color: #172033;
+    color: #171411;
   }
 
   p {
-    max-width: 540px;
-    font-size: clamp(0.98rem, 1.8vw, 1.12rem);
-    line-height: 1.7;
-    color: #647086;
+    max-width: 560px;
+    font-size: clamp(0.98rem, 1.6vw, 1.12rem);
+    line-height: 1.72;
+    color: #67625b;
   }
 
   @media (max-width: 820px) {
@@ -55,34 +55,55 @@ const Header = styled.header`
 const HeroActions = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem;
-  margin-top: 1.1rem;
+  gap: 0.5rem;
+  margin-top: 1.15rem;
 
   a {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 2.6rem;
-    padding: 0 1rem;
-    border-radius: 10px;
+    min-height: 2.35rem;
+    padding: 0 0.85rem;
+    border-radius: 7px;
     text-decoration: none;
-    font-weight: 800;
-    background: #171b2d;
-    color: white;
+    font-size: 0.92rem;
+    font-weight: 700;
+    background: #2d2924;
+    color: #fffdf8;
     box-shadow: none;
+  }
+
+  a::before {
+    content: '책';
+    display: inline-grid;
+    place-items: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    margin-right: 0.45rem;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.14);
+    font-size: 0.7rem;
+    font-weight: 800;
   }
 
   a.secondary {
     display: inline-flex;
     align-items: center;
-    min-height: 2.6rem;
-    padding: 0 1rem;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.78);
-    border: 1px solid rgba(42, 50, 70, 0.1);
-    color: #767f95;
-    font-weight: 800;
+    min-height: 2.35rem;
+    padding: 0 0.85rem;
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(25, 23, 20, 0.1);
+    color: #3f3a34;
+    font-size: 0.92rem;
+    font-weight: 700;
     box-shadow: none;
+  }
+
+  a.secondary::before {
+    content: '순위';
+    background: rgba(25, 23, 20, 0.06);
+    color: #5c554d;
   }
 `;
 
@@ -91,54 +112,59 @@ const Eyebrow = styled.div`
   align-items: center;
   gap: 0.45rem;
   margin-bottom: 0.8rem;
-  color: #171b2d;
-  font-size: 0.8rem;
+  color: #615c54;
+  font-size: 0.78rem;
   font-weight: 900;
   letter-spacing: 0;
-  background: #ffffff;
-  border: 1px solid #dedede;
-  padding: 0.42rem 0.7rem;
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(25, 23, 20, 0.08);
+  padding: 0.42rem 0.72rem;
   border-radius: 8px;
 
   &::before {
-    content: "✦";
-    color: #777f8f;
+    content: "";
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: #7b8a72;
   }
 `;
 
 const CuratorCard = styled.aside`
-  border: 1px solid #dedede;
-  border-radius: 14px;
-  background: #ffffff;
-  padding: 1rem;
+  width: fit-content;
+  margin-top: 1rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
   box-shadow: none;
 
   .shelf {
     display: grid;
-    grid-template-columns: 9rem 1fr;
-    gap: 0.8rem;
+    grid-template-columns: 4.5rem minmax(0, 22rem);
+    gap: 0.85rem;
     align-items: center;
   }
 
   img {
-    width: 9rem;
+    width: 4.5rem;
     aspect-ratio: 1;
     object-fit: contain;
     border-radius: 10px;
-    background: #f3f5ff;
+    background: rgba(255, 255, 255, 0.58);
   }
 
   .note {
-    color: #647086;
-    line-height: 1.6;
-    font-size: 0.95rem;
+    color: #625c55;
+    line-height: 1.5;
+    font-size: 0.88rem;
   }
 
   strong {
     display: block;
-    color: #172033;
-    font-size: 1rem;
-    margin-bottom: 0.25rem;
+    color: #191714;
+    font-size: 0.9rem;
+    margin-bottom: 0.15rem;
   }
 
   @media (max-width: 420px) {
@@ -154,7 +180,7 @@ const CuratorCard = styled.aside`
 
 const MainContent = styled.div`
   display: grid;
-  gap: 1.1rem;
+  gap: 0.9rem;
 `;
 
 const KitSection = styled.section`
@@ -296,9 +322,9 @@ const FeatureGrid = styled.section`
     min-height: 92px;
     border-radius: 12px;
     padding: 1rem;
-    background: #ffffff;
-    border: 1px solid rgba(65, 88, 208, 0.1);
-    box-shadow: 0 14px 32px rgba(39, 61, 119, 0.08);
+    background: rgba(252, 244, 231, 0.9);
+    border: 1px solid rgba(58, 43, 31, 0.16);
+    box-shadow: 0 12px 22px rgba(46, 32, 22, 0.1);
   }
 
   .icon {
@@ -313,13 +339,13 @@ const FeatureGrid = styled.section`
 
   strong {
     display: block;
-    color: #172033;
+    color: var(--wood-900);
     font-size: 0.94rem;
     margin-bottom: 0.2rem;
   }
 
   span {
-    color: #79849a;
+    color: #6f5946;
     font-size: 0.84rem;
     line-height: 1.45;
   }
@@ -328,9 +354,10 @@ const FeatureGrid = styled.section`
 export default function Home() {
   const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
   const [readingContext, setReadingContext] = useState<ReadingContext | null>(
-    null,
+    null
   );
   const [bestSellers, setBestSellers] = useState<Book[]>([]);
+  const heroMomo = getMomoTheme(selectedEmotion);
 
   useEffect(() => {
     const fetchBestSellers = async () => {
@@ -364,42 +391,39 @@ export default function Home() {
       <ContentWrapper>
         <Header>
           <div>
-            <Eyebrow>책 큐레이터</Eyebrow>
-            <h1>커버를 넘기다 보면 오늘 읽을 책이 보여요</h1>
+            <Eyebrow>Book curation</Eyebrow>
+            <h1>오늘 펼칠 책을 고르는 시간</h1>
             <p>
-              먼저 요즘 많이 읽는 책을 둘러보고, 마음이 가는 순간에는 모모의
-              질문에 답해 더 정확한 추천으로 넘어가세요.
+              지금 기분과 읽을 여유를 고르면,
+              모모가 표지와 문장을 기준으로 어울리는 책을 좁혀드릴게요.
             </p>
+            <CuratorCard>
+              <div className="shelf">
+                <img src={heroMomo.image} alt="책 큐레이터 모모" />
+                <p className="note">
+                  <strong>{heroMomo.name}</strong>
+                  {heroMomo.line} 오늘 펼칠 책의 방향을 같이 잡아볼게요.
+                </p>
+              </div>
+            </CuratorCard>
             <HeroActions>
-              <a href="#mood-shelf">내 추천 찾기</a>
-              <a className="secondary" href="#bestseller-shelf">
-                베스트셀러 먼저 보기
-              </a>
+              <a href="#mood-shelf">내 책 고르기</a>
+              <a className="secondary" href="#bestseller-shelf">요즘 읽는 책</a>
             </HeroActions>
           </div>
-          <CuratorCard>
-            <div className="shelf">
-              <img src="/mascot-curator.png" alt="책 큐레이터 마스코트" />
-              <p className="note">
-                <strong>북큐 모모</strong>
-                바로 추천하지 않고, 꼬리에 꼬리를 무는 질문으로 오늘의 책을 더
-                잘 찾아볼게요.
-              </p>
-            </div>
-          </CuratorCard>
         </Header>
 
         {!selectedEmotion ? (
           <MainContent>
-            {bestSellers.length > 0 && (
-              <div id="bestseller-shelf">
+            <div id="bestseller-shelf">
+              {bestSellers.length > 0 && (
                 <BookShelf
-                  title="요즘 많이 펼쳐보는 책"
-                  subtitle="알라딘 베스트셀러 표지를 먼저 훑어보세요."
+                  title="요즘 많이 읽는 책"
+                  subtitle="바로 고르기 전, 가볍게 둘러보세요."
                   books={bestSellers}
                 />
-              </div>
-            )}
+              )}
+            </div>
             {/* <KitSection>
               <div>
                 <div className="eyebrow">Mood Curation Kit</div>
@@ -430,11 +454,11 @@ export default function Home() {
             <div id="mood-shelf">
               <EmotionSelector onSelect={handleEmotionSelect} />
             </div>
-            <FeatureGrid>
+            {/* <FeatureGrid>
               <div className="mini">
                 <div
                   className="icon"
-                  style={{ background: "#e9efff", color: "#4e73ff" }}
+                  style={{ background: "#f0dfc5", color: "#6c3f21" }}
                 >
                   A
                 </div>
@@ -444,7 +468,7 @@ export default function Home() {
               <div className="mini">
                 <div
                   className="icon"
-                  style={{ background: "#e9fbf5", color: "#12a076" }}
+                  style={{ background: "#ead5af", color: "#7b4d2d" }}
                 >
                   12
                 </div>
@@ -454,7 +478,7 @@ export default function Home() {
               <div className="mini">
                 <div
                   className="icon"
-                  style={{ background: "#f0ecff", color: "#7c5cff" }}
+                  style={{ background: "#f6e8cf", color: "#8b5b35" }}
                 >
                   Q
                 </div>
@@ -464,14 +488,14 @@ export default function Home() {
               <div className="mini">
                 <div
                   className="icon"
-                  style={{ background: "#fff4d6", color: "#d89100" }}
+                  style={{ background: "#e5c79e", color: "#5d351b" }}
                 >
                   ★
                 </div>
                 <strong>추천 이유</strong>
                 <span>왜 어울리는지 알려줘요</span>
               </div>
-            </FeatureGrid>
+            </FeatureGrid> */}
           </MainContent>
         ) : !readingContext ? (
           <FollowUpQuestions
@@ -483,9 +507,9 @@ export default function Home() {
           <div>
             <button
               onClick={handleReset}
-              className="mb-6 px-4 py-2 bg-white text-[#4e73ff] rounded-full hover:bg-[#e9efff] transition-colors font-bold border border-[#d7e0ff]"
+              className="mb-4 px-4 py-2 bg-[#fff8ec] text-[#5d351b] rounded-md hover:bg-[#f0dfc5] transition-colors font-bold border border-[#8b5b35]/30"
             >
-              다른 마음 고르기
+              다시 고르기
             </button>
             <BookRecommender
               emotion={selectedEmotion}

@@ -8,7 +8,7 @@ import {
   ALADIN_SORTS,
   type Book,
 } from '@/lib/aladin'
-import { getRecommendedBooks } from '@/lib/matching'
+import { getFallbackBestSellers, getRecommendedBooks } from '@/lib/matching'
 
 // 다양성을 위해 매 요청 다르게 응답해야 하므로 캐시하지 않는다.
 export const dynamic = 'force-dynamic'
@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
   const fallback = (): Book[] => getRecommendedBooks(emotion, count) as Book[]
 
   if (type === 'bestseller') {
+    const bestsellerFallback = (): Book[] => getFallbackBestSellers(count) as Book[]
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), ALADIN_TIMEOUT_MS)
 
@@ -37,12 +38,12 @@ export async function GET(req: NextRequest) {
       })).slice(0, count)
 
       if (books.length === 0) {
-        return NextResponse.json({ source: 'fallback', books: fallback() })
+        return NextResponse.json({ source: 'fallback-bestseller', books: bestsellerFallback() })
       }
       return NextResponse.json({ source: 'aladin-bestseller', books })
     } catch (err) {
       console.error('[api/books] 알라딘 베스트셀러 호출 실패, 더미로 폴백:', err)
-      return NextResponse.json({ source: 'fallback', books: fallback() })
+      return NextResponse.json({ source: 'fallback-bestseller', books: bestsellerFallback() })
     } finally {
       clearTimeout(timer)
     }

@@ -294,6 +294,13 @@ export function getRecommendedBooks(emotion: string, count: number = 5) {
     .slice(0, count)
 }
 
+export function getFallbackBestSellers(count: number = 10) {
+  return Object.values(booksDatabase)
+    .flat()
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, count)
+}
+
 // 감정과 책의 연결고리를 설명하는 함수 (나중에 Claude API로 대체될 부분)
 export function getRecommendationReason(emotion: string, bookTitle: string): string {
   const reasons: { [key: string]: string } = {

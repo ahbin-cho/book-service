@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { emotionDetails } from '@/lib/emotionKeywords'
+import { getMomoTheme } from '@/lib/momoThemes'
 
 export interface ReadingContext {
   pace: string
@@ -18,201 +18,206 @@ interface FollowUpQuestionsProps {
 
 const Panel = styled.section`
   position: relative;
-  padding: clamp(0.8rem, 2vw, 1.2rem) 0 0;
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding: clamp(0.5rem, 2vw, 1rem) 0 0;
 `
 
-const Header = styled.div`
+const Header = styled.div<{ $panel: string; $wash: string }>`
   position: relative;
-  padding: clamp(1.25rem, 3vw, 2rem);
-  background:
-    linear-gradient(90deg, rgba(16, 20, 32, 0.04), transparent 18%),
-    linear-gradient(180deg, #fffdf8, #fbfaf6);
-  border-right: 1px solid #d8d2c5;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 0;
+  background: transparent;
+  border: 0;
 
   img {
-    width: 4.25rem;
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    width: clamp(3.75rem, 10vw, 5rem);
     aspect-ratio: 1;
     object-fit: contain;
-    border-radius: 4px;
-    background: #f5f1e8;
-    margin-bottom: 1.25rem;
+    border-radius: 14px;
+    background: ${(props) => props.$wash};
+    box-shadow: none;
   }
 
   .step {
-    color: #7a7266;
-    font-size: 0.84rem;
-    font-weight: 700;
+    display: inline-flex;
+    width: fit-content;
+    color: #77716a;
+    background: transparent;
+    font-size: 0.8rem;
+    font-weight: 800;
     letter-spacing: 0;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.45rem;
+    padding: 0;
+    border-radius: 0;
   }
 
   h2 {
     font-family: var(--font-display);
-    color: #151515;
-    font-size: clamp(1.45rem, 2.6vw, 2.15rem);
-    line-height: 1.25;
-    margin-bottom: 0.85rem;
+    color: var(--ink);
+    font-size: clamp(1.55rem, 3.2vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.14;
+    margin-bottom: 0.45rem;
+    letter-spacing: 0;
   }
 
   p {
-    color: #68645d;
-    line-height: 1.75;
-    max-width: 28rem;
+    color: #68635c;
+    line-height: 1.5;
+    font-size: 0.92rem;
+    max-width: 30rem;
+  }
+
+  .momo-name {
+    display: none;
   }
 
   .folio {
-    position: absolute;
-    left: clamp(1.25rem, 3vw, 2rem);
-    bottom: 1.1rem;
-    color: #a09a90;
-    font-size: 0.75rem;
+    display: none;
   }
 
   @media (max-width: 560px) {
-    min-height: 260px;
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    img {
+      width: 4rem;
+    }
   }
 `
 
 const Spread = styled.div`
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
-  min-height: 420px;
-  border: 1px solid #d8d2c5;
-  border-radius: 3px;
+  gap: 1.25rem;
+  border: 1px solid rgba(25, 23, 20, 0.08);
+  border-radius: 18px;
   overflow: hidden;
-  background: #fffdf8;
-  box-shadow:
-    0 26px 70px rgba(26, 28, 38, 0.09),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.7);
-  perspective: 1400px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 18px 48px rgba(25, 23, 20, 0.06);
+  padding: clamp(1.15rem, 3vw, 1.65rem);
+  backdrop-filter: blur(14px);
 
   &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: calc(44% - 1px);
-    width: 18px;
-    transform: translateX(-50%);
-    background:
-      linear-gradient(90deg, rgba(24, 20, 14, 0.12), rgba(24, 20, 14, 0.035), transparent);
-    pointer-events: none;
-    z-index: 3;
+    display: none;
   }
 
-  @media (max-width: 760px) {
-    grid-template-columns: 1fr;
-    min-height: auto;
-
-    &::before {
-      display: none;
-    }
-  }
+  @media (max-width: 760px) {}
 `
 
 const Options = styled.div`
   position: relative;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0;
+  gap: 0.55rem;
   align-content: stretch;
-  padding: clamp(1.2rem, 3vw, 2rem);
-  background:
-    linear-gradient(90deg, rgba(24, 20, 14, 0.08), transparent 14%),
-    repeating-linear-gradient(180deg, transparent 0 62px, rgba(70, 62, 48, 0.045) 63px, transparent 64px),
-    #fffdf8;
+  padding: 0;
+  background: transparent;
   transform-origin: left center;
-  animation: pageTurn 520ms cubic-bezier(0.2, 0.72, 0.2, 1) both;
+  animation: optionsIn 260ms ease both;
 
   &::after {
-    content: '';
-    position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    bottom: 0.75rem;
-    width: 12px;
-    border-right: 1px solid #ded8cc;
-    box-shadow:
-      4px 0 0 #f7f2e8,
-      8px 0 0 #eee7da;
-    opacity: 0.9;
-    pointer-events: none;
+    display: none;
   }
 
-  @keyframes pageTurn {
+  @keyframes optionsIn {
     0% {
       opacity: 0;
-      transform: rotateY(-18deg) translateX(-14px);
-      filter: blur(1px);
-    }
-    58% {
-      opacity: 1;
+      transform: translateY(8px);
     }
     100% {
       opacity: 1;
-      transform: rotateY(0) translateX(0);
-      filter: blur(0);
+      transform: translateY(0);
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;
   }
+
+  @media (max-width: 760px) {
+    grid-template-columns: 1fr;
+  }
 `
 
 const OptionButton = styled.button<{ $tone: string }>`
   position: relative;
-  min-height: 92px;
-  padding: 1rem 2.25rem 1rem 2.15rem;
+  min-height: 4.6rem;
+  padding: 0.85rem 3rem 0.85rem 0.95rem;
   text-align: left;
-  border: 0;
-  border-bottom: 1px solid #e4ded2;
-  border-radius: 0;
-  background: transparent;
+  border: 1px solid rgba(25, 23, 20, 0.08);
+  border-radius: 12px;
+  background: rgba(250, 249, 246, 0.72);
   cursor: pointer;
-  transition: transform 0.22s ease, color 0.22s ease, background 0.22s ease;
+  box-shadow: none;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 
   &:hover {
-    transform: translateX(6px);
-    background: rgba(36, 31, 23, 0.035);
+    transform: translateX(3px);
+    border-color: rgba(25, 23, 20, 0.18);
+    background: #ffffff;
   }
 
   &::before {
-    content: attr(data-index);
+    content: '';
     position: absolute;
-    top: 1.05rem;
-    left: 0;
-    width: 1.3rem;
-    color: #8c857a;
-    font-family: var(--font-display);
-    font-size: 0.85rem;
-    font-weight: 700;
+    display: none;
   }
 
   .icon {
-    display: block;
-    color: #9d968b;
-    background: transparent;
-    width: auto;
-    height: auto;
-    margin-bottom: 0.35rem;
+    position: static;
+    display: inline-grid;
+    place-items: center;
+    color: ${(props) => props.$tone};
+    background: rgba(25, 23, 20, 0.05);
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 8px;
     font-size: 0.75rem;
-    font-weight: 700;
+    font-weight: 900;
+    margin: 0 0.8rem 0 0;
+    vertical-align: top;
   }
 
   strong {
-    display: block;
-    color: #171717;
-    margin-bottom: 0.3rem;
-    font-size: 1.05rem;
-    line-height: 1.35;
+    display: inline-block;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-weight: 700;
+    margin: 0 0 0.2rem;
+    font-size: 1rem;
+    line-height: 1.25;
+    vertical-align: top;
   }
 
   span {
-    color: #676159;
-    font-size: 0.9rem;
-    line-height: 1.5;
+    color: #706a62;
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+
+  .option-copy {
+    display: inline-block;
+    max-width: calc(100% - 3rem);
+  }
+
+  .option-copy > span {
+    display: block;
+  }
+
+  &::after {
+    content: '→';
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+    color: #8d8780;
+    font-weight: 900;
   }
 `
 
@@ -221,21 +226,21 @@ const Footer = styled.div`
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 0 0;
+  padding: 0.85rem 0 0;
 
   button {
-    border: 1px solid #d8d2c5;
-    color: #171717;
-    background: white;
-    border-radius: 3px;
-    padding: 0.7rem 1rem;
+    border: 1px solid rgba(25, 23, 20, 0.1);
+    color: #191714;
+    background: rgba(255, 255, 255, 0.72);
+    border-radius: 8px;
+    padding: 0.68rem 0.9rem;
     font-weight: 700;
     cursor: pointer;
   }
 
   .crumbs {
-    color: #706b63;
-    font-size: 0.88rem;
+    color: #79736b;
+    font-size: 0.84rem;
     text-align: right;
   }
 
@@ -252,32 +257,32 @@ const Footer = styled.div`
 const questions = [
   {
     key: 'pace',
-    title: '오늘은 어떤 속도로 읽고 싶어요?',
-    desc: '책의 두께와 호흡을 먼저 맞춰볼게요.',
+    title: '읽을 여유',
+    desc: '지금 집중력에 맞춰요.',
     options: [
-      { label: '짧고 가볍게', value: '짧은 에세이', desc: '부담 없이 한두 꼭지씩', icon: '15', tone: '#5b7cfa' },
-      { label: '천천히 오래', value: '긴 호흡', desc: '문장에 오래 머물기', icon: '∞', tone: '#20c997' },
-      { label: '확 빨려들게', value: '몰입감', desc: '페이지가 술술 넘어가게', icon: '→', tone: '#ff6f91' },
+      { label: '짧게', value: '짧고 쉬운 책', desc: '바로 읽고 덮기', icon: '01', tone: '#7b8a72' },
+      { label: '천천히', value: '적당한 깊이', desc: '생각할 거리 남기기', icon: '02', tone: '#6f8190' },
+      { label: '몰입', value: '몰입감', desc: '시간 잊고 읽기', icon: '03', tone: '#777087' },
     ],
   },
   {
     key: 'genre',
-    title: '어떤 결의 책이 더 끌려요?',
-    desc: '감정은 유지하되 장르 쪽 취향을 좁혀볼게요.',
+    title: '읽는 방식',
+    desc: '오늘 손이 갈 형태를 골라요.',
     options: [
-      { label: '에세이', value: '에세이', desc: '다정하고 현실적인 문장', icon: 'E', tone: '#ff9f43' },
-      { label: '소설', value: '소설', desc: '다른 세계에 잠깐 들어가기', icon: 'S', tone: '#7c5cff' },
-      { label: '심리/실용', value: '심리학', desc: '마음을 이해하는 단서', icon: 'P', tone: '#00a8cc' },
+      { label: '공감', value: '에세이', desc: '내 얘기 같은 글', icon: '01', tone: '#9a7f72' },
+      { label: '이야기', value: '소설', desc: '다른 세계로 들어가기', icon: '02', tone: '#67707b' },
+      { label: '정리', value: '심리학 실용', desc: '머리가 맑아지는 글', icon: '03', tone: '#6f7b67' },
     ],
   },
   {
     key: 'purpose',
-    title: '책을 덮고 나면 어떤 기분이면 좋겠어요?',
-    desc: '마지막으로 추천의 온도를 맞출게요.',
+    title: '남길 감각',
+    desc: '마지막 방향만 맞춰요.',
     options: [
-      { label: '위로받은 느낌', value: '위로', desc: '마음이 조금 말랑해지게', icon: '♡', tone: '#ff6680' },
-      { label: '정리된 느낌', value: '생각 정리', desc: '복잡한 마음에 이름 붙이기', icon: '□', tone: '#4e73ff' },
-      { label: '움직이고 싶은 느낌', value: '동기부여', desc: '내일을 조금 기대하게', icon: '✦', tone: '#5fca8d' },
+      { label: '편안함', value: '위로', desc: '조금 덜 날카롭게', icon: '01', tone: '#a27476' },
+      { label: '명료함', value: '생각 정리', desc: '머리가 조금 맑게', icon: '02', tone: '#777087' },
+      { label: '추진력', value: '동기부여', desc: '작게 움직일 힘', icon: '03', tone: '#6f836f' },
     ],
   },
 ] as const
@@ -286,7 +291,7 @@ export default function FollowUpQuestions({ emotion, onBack, onComplete }: Follo
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<Partial<ReadingContext>>({})
   const current = questions[step]
-  const detail = emotionDetails[emotion]
+  const momo = getMomoTheme(emotion)
   const crumbs = useMemo(() => Object.values(answers).filter(Boolean).join(' · '), [answers])
 
   const handleSelect = (value: string) => {
@@ -310,12 +315,16 @@ export default function FollowUpQuestions({ emotion, onBack, onComplete }: Follo
   return (
     <Panel>
       <Spread>
-        <Header>
-          <img src="/mascot-curator.png" alt="" />
+        <Header
+          $panel={momo.panel}
+          $wash={momo.wash}
+        >
+          <img src={momo.image} alt="" />
           <div>
-            <div className="step">{step + 1} / {questions.length} · {emotion}</div>
+            <div className="step">{step + 1} / {questions.length} · {momo.label}</div>
+            <div className="momo-name">{momo.name}</div>
             <h2>{current.title}</h2>
-            <p>{detail?.desc ? `${detail.desc}. ` : ''}{current.desc}</p>
+            <p>{momo.line} {current.desc}</p>
           </div>
           <span className="folio">{String(step + 1).padStart(2, '0')}</span>
         </Header>
@@ -327,17 +336,19 @@ export default function FollowUpQuestions({ emotion, onBack, onComplete }: Follo
               data-index={String(index + 1).padStart(2, '0')}
               onClick={() => handleSelect(option.value)}
             >
-              <span className="icon">p. {String(step + 1).padStart(2, '0')}</span>
-              <strong>{option.label}</strong>
-              <span>{option.desc}</span>
+              <span className="icon">{option.icon}</span>
+              <span className="option-copy">
+                <strong>{option.label}</strong>
+                <span>{option.desc}</span>
+              </span>
             </OptionButton>
           ))}
         </Options>
       </Spread>
 
       <Footer>
-        <button onClick={handleBack}>{step === 0 ? '감정 다시 고르기' : '이전 질문'}</button>
-        <div className="crumbs">{crumbs || '답변을 고르면 다음 질문으로 이어져요'}</div>
+        <button onClick={handleBack}>{step === 0 ? '처음으로' : '이전'}</button>
+        <div className="crumbs">{crumbs || '선택하면 바로 다음으로 넘어가요'}</div>
       </Footer>
     </Panel>
   )

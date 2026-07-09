@@ -1,3 +1,5 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -14,13 +16,30 @@ html {
 }
 
 body {
-  --font-sans: 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif;
   --font-display: var(--font-sans);
+  --wood-900: #191714;
+  --wood-800: #27231f;
+  --wood-700: #3b342d;
+  --wood-600: #6f6257;
+  --wood-500: #9a8c7b;
+  --wood-300: #ddd4c8;
+  --paper: #fbfaf7;
+  --paper-deep: #f0ece6;
+  --ink: #191714;
+  --muted: #6f6a63;
   font-family: var(--font-sans);
-  background-color: #f4fbff;
-  color: #172033;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(218, 226, 216, 0.52), transparent 26rem),
+    radial-gradient(circle at 84% 14%, rgba(232, 223, 210, 0.66), transparent 24rem),
+    #f7f5f1;
+  color: var(--ink);
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+}
+
+body::before {
+  display: none;
 }
 
 button,
@@ -30,7 +49,7 @@ a {
 
 button:focus-visible,
 a:focus-visible {
-  outline: 3px solid rgba(78, 115, 255, 0.35);
+  outline: 3px solid rgba(93, 114, 91, 0.28);
   outline-offset: 3px;
 }
 
@@ -59,13 +78,13 @@ a:focus-visible {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #eeeae3;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888;
+  background: #aaa196;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #7d756c;
 }
